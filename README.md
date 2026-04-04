@@ -18,39 +18,39 @@ O projeto consiste em um ecossistema digital para suprir a ausência de uma ferr
 │                                                                 │
 │   ┌─────────────────┐         ┌──────────────────────────┐      │
 │   │   Mobile App    │◄───────►│    Core API (Fastify)    │      │
-│   │   (Kotlin/      │  REST   │    Node.js — Porta 3000  │      │
+│   │   (Kotlin/      │  REST   │    Node.js — Porta 3333  │      │
 │   │    Android)     │  JWT    │                          │      │
-│   └─────────────────┘         │  - Autenticação JWT       │      │
-│                               │  - Catálogo/Acervo        │      │
-│                               │  - Empréstimos/Devoluções │      │
-│                               │  - Multas                 │      │
-│                               │  - Likes/Comentários      │      │
-│                               │  - Moderação (Admin)      │      │
+│   └─────────────────┘         │  - Autenticação JWT      │      │
+│                               │  - Catálogo/Acervo       │      │
+│                               │  - Empréstimos/Devoluções│      │
+│                               │  - Multas                │      │
+│                               │  - Likes/Comentários     │      │
+│                               │  - Moderação (Admin)     │      │
 │                               └──────────┬───────────────┘      │
-│                                          │                       │
+│                                          │                      │
 │                               ┌──────────▼───────────────┐      │
-│                               │      PostgreSQL           │      │
-│                               │      Porta 5432           │      │
+│                               │      PostgreSQL(Docker)  │      │
+│                               │      Porta 5432          │      │
 │                               └──────────────────────────┘      │
-│                                          │                       │
+│                                          │                      │
 │                               ┌──────────▼───────────────┐      │
-│                               │      RabbitMQ             │      │
-│                               │      Porta 5672           │      │
-│                               │                           │      │
-│                               │  Filas:                   │      │
-│                               │  - fila.comentarios       │      │
-│                               │  - fila.likes             │      │
-│                               │  - fila.emprestimo.fila   │      │
+│                               │      RabbitMQ            │      │
+│                               │      Porta 5672          │      │
+│                               │                          │      │
+│                               │  Filas:                  │      │
+│                               │  - fila.comentarios      │      │
+│                               │  - fila.likes            │      │
+│                               │  - fila.emprestimo.fila  │      │
 │                               └──────────┬───────────────┘      │
-│                                          │                       │
-│                               ┌──────────▼───────────────┐      │
-│                               │   Serviço de Métricas     │      │
-│                               │   Node.js — Porta 3001    │      │
-│                               │                           │      │
-│                               │  - Livros mais avaliados  │      │
-│                               │  - Livros mais emprestados│      │
-│                               │  - Análise por categoria  │      │
-│                               └──────────────────────────┘      │
+│                                          │                      │
+│                               ┌──────────▼────────────────┐     │
+│                               │   Serviço de Métricas     │     │
+│                               │   Node.js — Porta 3001    │     │
+│                               │                           │     │
+│                               │  - Livros mais avaliados  │     │
+│                               │  - Livros mais emprestados│     │
+│                               │  - Análise por categoria  │     │
+│                               └───────────────────────────┘     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -416,15 +416,16 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: biblioteca
-      POSTGRES_PASSWORD: biblioteca123
-      POSTGRES_DB: biblioteca_db
+    image: bitnami/postgresql@sha256:c30c796dcf96a67a405b905bf6aaf8d6c957d5c2fe729db6e67e2760e21fd9f8
+    container_name: unifor-books-postgres
     ports:
       - "5432:5432"
+    environment:
+      POSTGRESQL_USERNAME: biblioteca
+      POSTGRESQL_PASSWORD: biblioteca123
+      POSTGRESQL_DATABASE: unifor_books
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres_data:/bitnami/postgresql
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -438,7 +439,7 @@ services:
   core-api:
     build: ./unifor-biblioteca-api
     ports:
-      - "3000:3000"
+      - "3333:3333"
     environment:
       DATABASE_URL: postgresql://biblioteca:biblioteca123@postgres:5432/biblioteca_db
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
