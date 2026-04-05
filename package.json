@@ -1,0 +1,38 @@
+{
+  "name": "unifor-books-api-core",
+  "version": "1.0.0",
+  "description": "O projeto consiste em um ecossistema digital para suprir a ausência de uma ferramenta portátil de conexão entre alunos e a biblioteca da UNIFOR. O sistema permite que estudantes consultem acervos, solicitem empréstimos, acompanhem devoluções e interajam com a comunidade de leitores, sem necessidade de presença física. Bibliotecários têm acesso a um painel administrativo integrado ao mesmo aplicativo mobile para moderação e gestão.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc && cp -r src/prisma ./dist/prisma"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gustavuhh1/unifor-books-api-core.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/gustavuhh1/unifor-books-api-core/issues"
+  },
+  "homepage": "https://github.com/gustavuhh1/unifor-books-api-core#readme",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.6.0",
+    "@prisma/client": "^7.6.0",
+    "fastify": "^5.8.4",
+    "pg": "^8.20.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.2",
+    "@types/pg": "^8.20.0",
+    "dotenv": "^17.4.0",
+    "prisma": "^7.6.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}
