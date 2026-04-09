@@ -5,6 +5,14 @@
     "outDir": "./dist",
     "baseUrl": "./",
 
+    // Aliases
+    "paths": {
+      "@prisma/*": ["src/database/*"],
+      "@lib/*": ["src/lib/*"],
+      "@utils/*": ["src/utils/*"],
+      "@/*": ["src/*"]
+    },
+
     // Environment Settings
     "module": "esnext",
     "moduleResolution": "bundler",

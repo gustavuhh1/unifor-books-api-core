@@ -23,11 +23,14 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "^7.6.0",
+    "bcrypt": "^6.0.0",
     "fastify": "^5.8.4",
+    "jose": "^6.2.2",
     "pg": "^8.20.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/node": "^25.5.2",
     "@types/pg": "^8.20.0",
     "dotenv": "^17.4.0",

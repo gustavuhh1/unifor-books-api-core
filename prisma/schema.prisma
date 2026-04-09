@@ -60,9 +60,9 @@ model Usuario {
   multas      Multa[]
   filasEspera FilaEspera[]
 
-  banimentos      Banimento[]    @relation("UsuarioBanido")
-  banimentosAdmin Banimento[]    @relation("AdminBanidor")
-  refreshTokens   RefreshToken[]
+  banimentos      Banimento[] @relation("UsuarioBanido")
+  banimentosAdmin Banimento[] @relation("AdminBanidor")
+  sessions        Session[]
 }
 
 model Livro {
@@ -191,12 +191,12 @@ model Banimento {
   admin   Usuario @relation("AdminBanidor", fields: [adminId], references: [id])
 }
 
-model RefreshToken {
-  id        String   @id @default(uuid())
-  token     String   @unique
-  usuarioId String
-  expiresAt DateTime
-  criadoEm  DateTime @default(now())
+model Session {
+  id           String   @id @default(uuid())
+  refreshToken String
+  userId       String
+  expiresAt    DateTime
+  criadoEm     DateTime @default(now())
 
-  usuario Usuario @relation(fields: [usuarioId], references: [id])
+  usuario Usuario @relation(fields: [userId], references: [id])
 }
