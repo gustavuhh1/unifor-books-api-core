@@ -4,7 +4,9 @@
   "description": "O projeto consiste em um ecossistema digital para suprir a ausência de uma ferramenta portátil de conexão entre alunos e a biblioteca da UNIFOR. O sistema permite que estudantes consultem acervos, solicitem empréstimos, acompanhem devoluções e interajam com a comunidade de leitores, sem necessidade de presença física. Bibliotecários têm acesso a um painel administrativo integrado ao mesmo aplicativo mobile para moderação e gestão.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "dev": "tsx watch src/server.ts",
     "build": "tsc && cp -r src/prisma ./dist/prisma"
   },
@@ -33,9 +35,13 @@
     "@types/bcrypt": "^6.0.0",
     "@types/node": "^25.5.2",
     "@types/pg": "^8.20.0",
+    "@types/supertest": "^7.2.0",
     "dotenv": "^17.4.0",
     "prisma": "^7.6.0",
+    "supertest": "^7.2.2",
     "tsx": "^4.21.0",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.4",
+    "vitest-mock-extended": "^4.0.0"
   }
 }

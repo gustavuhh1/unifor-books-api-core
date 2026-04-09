@@ -1,5 +1,5 @@
+import { hashSenha } from "@lib/hash.js";
 import { prisma } from "../../database/prisma.js";
-import { hashSenha } from "src/lib/hash";
 import type { CriarUsuarioInput } from "./users.schema.js";
 
 export async function criarUsuario(data: CriarUsuarioInput) {
@@ -33,5 +33,24 @@ export async function criarUsuario(data: CriarUsuarioInput) {
     },
   });
 
-  return usuario;
+  const response = Object.fromEntries(
+    Object.entries(usuario).filter(([key]) => key !== "senhaHash"),
+  );
+
+  return response;
+}
+
+export async function listarUsuarios() {
+  const usuarios = await prisma.usuario.findMany({
+    select: {
+      id: true,
+      matricula: true,
+      nome: true,
+      email: true,
+      role: true,
+      criadoEm: true,
+    },
+  });
+
+  return usuarios;
 }
