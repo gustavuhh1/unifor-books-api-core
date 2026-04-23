@@ -11,8 +11,7 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
   const token = authHeader.split(" ")[1];
 
   try {
-
-    if(!token) {
+    if (!token) {
       return reply.code(401).send({ message: "Token não fornecido" });
     }
 

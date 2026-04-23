@@ -13,6 +13,7 @@ export async function listarLivros(query: {
   const skip = (page - 1) * limit;
 
   const where = {
+    ativo: true, // Por padrão listar apenas livros ativos
     ...(query.titulo && {
       titulo: { contains: query.titulo, mode: "insensitive" as const },
     }),
@@ -43,6 +44,11 @@ export async function listarLivros(query: {
         sinopse: true,
         capaUrl: true,
         categoria: true,
+        anoPublicacao: true,
+        editora: true,
+        idioma: true,
+        paginas: true,
+        ativo: true,
         criadoEm: true,
         exemplares: {
           select: { status: true },
@@ -74,6 +80,11 @@ export async function listarLivros(query: {
       sinopse: livro.sinopse,
       capaUrl: livro.capaUrl,
       categoria: livro.categoria,
+      anoPublicacao: livro.anoPublicacao,
+      editora: livro.editora,
+      idioma: livro.idioma,
+      paginas: livro.paginas,
+      ativo: livro.ativo,
       criadoEm: livro.criadoEm,
       totalExemplares,
       exemplaresDisponiveis,
@@ -95,6 +106,11 @@ export async function buscarLivroPorId(id: string) {
       sinopse: true,
       capaUrl: true,
       categoria: true,
+      anoPublicacao: true,
+      editora: true,
+      idioma: true,
+      paginas: true,
+      ativo: true,
       criadoEm: true,
       exemplares: {
         select: {
@@ -127,6 +143,11 @@ export async function buscarLivroPorId(id: string) {
     sinopse: livro.sinopse,
     capaUrl: livro.capaUrl,
     categoria: livro.categoria,
+    anoPublicacao: livro.anoPublicacao,
+    editora: livro.editora,
+    idioma: livro.idioma,
+    paginas: livro.paginas,
+    ativo: livro.ativo,
     criadoEm: livro.criadoEm,
     totalExemplares: livro.exemplares.length,
     exemplaresDisponiveis: livro.exemplares.filter((e) => e.status === "DISPONIVEL")
@@ -143,6 +164,10 @@ export async function criarLivro(data: {
   sinopse?: string;
   capaUrl?: string;
   categoria: string;
+  anoPublicacao?: number;
+  editora?: string;
+  idioma?: string;
+  paginas?: number;
 }) {
   const livroExistente = await prisma.livro.findUnique({
     where: { isbn: data.isbn },
@@ -162,6 +187,11 @@ export async function criarLivro(data: {
       sinopse: true,
       capaUrl: true,
       categoria: true,
+      anoPublicacao: true,
+      editora: true,
+      idioma: true,
+      paginas: true,
+      ativo: true,
       criadoEm: true,
 
     },
@@ -176,6 +206,11 @@ export async function editarLivro(
     sinopse?: string;
     capaUrl?: string;
     categoria?: string;
+    anoPublicacao?: number;
+    editora?: string;
+    idioma?: string;
+    paginas?: number;
+    ativo?: boolean;
   },
 ) {
   const livroExistente = await prisma.livro.findUnique({
@@ -197,6 +232,41 @@ export async function editarLivro(
       sinopse: true,
       capaUrl: true,
       categoria: true,
+      anoPublicacao: true,
+      editora: true,
+      idioma: true,
+      paginas: true,
+      ativo: true,
+      criadoEm: true,
+    },
+  });
+}
+
+export async function desativarLivro(id: string) {
+  const livroExistente = await prisma.livro.findUnique({
+    where: { id },
+  });
+
+  if (!livroExistente) {
+    throw new Error("Livro não encontrado");
+  }
+
+  return await prisma.livro.update({
+    where: { id },
+    data: { ativo: false },
+    select: {
+      id: true,
+      titulo: true,
+      autor: true,
+      isbn: true,
+      sinopse: true,
+      capaUrl: true,
+      categoria: true,
+      anoPublicacao: true,
+      editora: true,
+      idioma: true,
+      paginas: true,
+      ativo: true,
       criadoEm: true,
     },
   });
@@ -224,6 +294,65 @@ export async function adicionarExemplar(livroId: string, numeroTombo: string) {
 
   return await prisma.exemplarLivro.create({
     data: { livroId, numeroTombo },
+    select: {
+      id: true,
+      numeroTombo: true,
+      status: true,
+    },
+  });
+}
+
+// ─────────────────────────────────────────
+// ATUALIZAR STATUS DO EXEMPLAR
+// ─────────────────────────────────────────
+export async function atualizarStatusExemplar(
+  exemplarId: string,
+  status: "DISPONIVEL" | "EMPRESTADO" | "INDISPONIVEL",
+) {
+  const exemplarExistente = await prisma.exemplarLivro.findUnique({
+    where: { id: exemplarId },
+  });
+
+  if (!exemplarExistente) {
+    throw new Error("Exemplar não encontrado");
+  }
+
+  return await prisma.exemplarLivro.update({
+    where: { id: exemplarId },
+    data: { status },
+    select: {
+      id: true,
+      numeroTombo: true,
+      status: true,
+    },
+  });
+}
+
+// ─────────────────────────────────────────
+// DELETAR EXEMPLAR
+// ─────────────────────────────────────────
+export async function deletarExemplar(exemplarId: string) {
+  const exemplar = await prisma.exemplarLivro.findUnique({
+    where: { id: exemplarId },
+    include: {
+      emprestimos: {
+        where: {
+          status: { in: ["PENDENTE", "AGUARDANDO_ENTREGA", "ATIVO"] },
+        },
+      },
+    },
+  });
+
+  if (!exemplar) {
+    throw new Error("Exemplar não encontrado");
+  }
+
+  if (exemplar.emprestimos.length > 0) {
+    throw new Error("Exemplar possui empréstimo ativo e não pode ser removido");
+  }
+
+  return await prisma.exemplarLivro.delete({
+    where: { id: exemplarId },
     select: {
       id: true,
       numeroTombo: true,

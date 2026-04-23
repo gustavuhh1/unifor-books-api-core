@@ -5,6 +5,9 @@ import {
   criarLivro,
   editarLivro,
   adicionarExemplar,
+  atualizarStatusExemplar,
+  desativarLivro,
+  deletarExemplar,
 } from "./books.service";
 import * as BooksSchema from "./books.schema";
 import { authenticate } from "../../shared/middlewares/authenticate";
@@ -79,6 +82,10 @@ export async function booksRoutes(app: FastifyInstance) {
         sinopse?: string;
         capaUrl?: string;
         categoria: string;
+        anoPublicacao?: number;
+        editora?: string;
+        idioma?: string;
+        paginas?: number;
       };
 
       try {
@@ -108,6 +115,11 @@ export async function booksRoutes(app: FastifyInstance) {
         sinopse?: string;
         capaUrl?: string;
         categoria?: string;
+        anoPublicacao?: number;
+        editora?: string;
+        idioma?: string;
+        paginas?: number;
+        ativo?: boolean;
       };
 
       try {
@@ -138,6 +150,75 @@ export async function booksRoutes(app: FastifyInstance) {
         return reply.code(201).send(result);
       } catch (error) {
         return reply.code(409).send({ message: "Número de tombo já cadastrado" });
+      }
+    },
+  );
+
+  app.patch(
+    "/books/exemplares/:exemplarId/status",
+    {
+      schema: {
+        tags: ["Books"],
+        body: BooksSchema.atualizarExemplarBodySchema,
+        response: BooksSchema.atualizarExemplarResponseSchema,
+      },
+      preHandler: [authenticate, authorize("ADMIN")],
+    },
+    async (request, reply) => {
+      const { exemplarId } = request.params as { exemplarId: string };
+      const { status } = request.body as { status: "DISPONIVEL" | "EMPRESTADO" | "INDISPONIVEL" };
+
+      try {
+        const result = await atualizarStatusExemplar(exemplarId, status);
+        return reply.code(200).send(result);
+      } catch (error) {
+        return reply.code(404).send({ message: "Exemplar não encontrado" });
+      }
+    },
+  );
+
+  app.delete(
+    "/books/:id",
+    {
+      schema: {
+        tags: ["Books"],
+        response: BooksSchema.editarLivroResponseSchema, // Reaproveita o schema do livro
+      },
+      preHandler: [authenticate, authorize("ADMIN")],
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string };
+
+      try {
+        const result = await desativarLivro(id);
+        return reply.code(200).send(result);
+      } catch (error) {
+        return reply.code(404).send({ message: "Livro não encontrado" });
+      }
+    },
+  );
+
+  app.delete(
+    "/books/:id/exemplares/:exemplarId",
+    {
+      schema: {
+        tags: ["Books"],
+        response: BooksSchema.deletarExemplarResponseSchema,
+      },
+      preHandler: [authenticate, authorize("ADMIN")],
+    },
+    async (request, reply) => {
+      const { exemplarId } = request.params as { exemplarId: string };
+
+      try {
+        const result = await deletarExemplar(exemplarId);
+        return reply.code(200).send(result);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Erro ao deletar exemplar";
+        if (message.includes("não encontrado")) {
+          return reply.code(404).send({ message });
+        }
+        return reply.code(409).send({ message });
       }
     },
   );

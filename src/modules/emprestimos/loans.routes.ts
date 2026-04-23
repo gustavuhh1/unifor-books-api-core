@@ -20,7 +20,7 @@ export async function loansRoutes(app: FastifyInstance) {
     async (request, reply) => {
       try {
         const { livroId } = request.body as { livroId: string };
-        const usuarioId = request.user.sub;
+        const usuarioId = request.user.id;
 
         const result = await solicitar(usuarioId, livroId);
 
@@ -49,7 +49,7 @@ export async function loansRoutes(app: FastifyInstance) {
     async (request, reply) => {
       try {
         const { id } = request.params as { id: string };
-        const usuarioId = request.user.sub;
+        const usuarioId = request.user.id;
         const result = await renovar(usuarioId, id);
         return reply.code(200).send(result);
       } catch (error: any) {
@@ -71,7 +71,7 @@ export async function loansRoutes(app: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const usuarioId = request.user.sub;
+        const usuarioId = request.user.id;
         const result = await meusEmprestimos(usuarioId);
         return reply.code(200).send(result);
       } catch (error: any) {

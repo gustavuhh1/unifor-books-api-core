@@ -6,7 +6,6 @@ declare module "fastify" {
       id: string;
       matricula: string;
       role: string;
-      sub: string;
     };
   }
 }

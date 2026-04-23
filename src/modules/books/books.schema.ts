@@ -8,6 +8,10 @@ export const criarLivroBodySchema = {
     sinopse: { type: "string" },
     capaUrl: { type: "string" },
     categoria: { type: "string" },
+    anoPublicacao: { type: "number" },
+    editora: { type: "string" },
+    idioma: { type: "string" },
+    paginas: { type: "number" },
   },
 } as const;
 
@@ -19,6 +23,11 @@ export const editarLivroBodySchema = {
     sinopse: { type: "string" },
     capaUrl: { type: "string" },
     categoria: { type: "string" },
+    anoPublicacao: { type: "number" },
+    editora: { type: "string" },
+    idioma: { type: "string" },
+    paginas: { type: "number" },
+    ativo: { type: "boolean" },
   },
 } as const;
 
@@ -58,9 +67,14 @@ const livroSchema = {
     titulo: { type: "string" },
     autor: { type: "string" },
     isbn: { type: "string" },
-    sinopse: { type: "string" },
-    capaUrl: { type: "string" },
+    sinopse: { type: "string", nullable: true },
+    capaUrl: { type: "string", nullable: true },
     categoria: { type: "string" },
+    anoPublicacao: { type: "number", nullable: true },
+    editora: { type: "string", nullable: true },
+    idioma: { type: "string", nullable: true },
+    paginas: { type: "number", nullable: true },
+    ativo: { type: "boolean" },
     criadoEm: { type: "string" },
     totalExemplares: { type: "number" },
     exemplaresDisponiveis: { type: "number" },
@@ -134,6 +148,46 @@ export const adicionarExemplarResponseSchema = {
     properties: exemplarSchema.properties,
   },
   409: {
+    type: "object",
+    properties: {
+      message: { type: "string" },
+    },
+  },
+} as const;
+
+export const deletarExemplarResponseSchema = {
+  200: {
+    type: "object",
+    properties: exemplarSchema.properties,
+  },
+  404: {
+    type: "object",
+    properties: {
+      message: { type: "string" },
+    },
+  },
+  409: {
+    type: "object",
+    properties: {
+      message: { type: "string" },
+    },
+  },
+} as const;
+
+export const atualizarExemplarBodySchema = {
+  type: "object",
+  required: ["status"],
+  properties: {
+    status: { type: "string", enum: ["DISPONIVEL", "EMPRESTADO", "INDISPONIVEL"] },
+  },
+} as const;
+
+export const atualizarExemplarResponseSchema = {
+  200: {
+    type: "object",
+    properties: exemplarSchema.properties,
+  },
+  404: {
     type: "object",
     properties: {
       message: { type: "string" },

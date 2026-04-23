@@ -1,5 +1,6 @@
-import { addBusinessDays, differenceInBusinessDays } from "date-fns";
+import { addBusinessDays, addDays, differenceInBusinessDays } from "date-fns";
 import { prisma } from "../../database/prisma";
+import { getSetting } from "../../shared/config/settings";
 
 export async function solicitar(usuarioId: string, livroId: string) {
   // 1. Checar multas
@@ -125,9 +126,8 @@ export async function aprovar(emprestimoId: string) {
     throw new Error("Empréstimo não encontrado ou não está pendente");
   }
 
-  // Padrão de 2 dias úteis para prazo de retirada (na Fase 3 a gente puxa da tabela Configuracao)
-  // TODO: IMPLEMENTAR CONFIGURAÇÃO
-  const diasDePrazo = 2;
+  // Padrão de 2 dias úteis para prazo de retirada
+  const diasDePrazo = parseInt(await getSetting("DIAS_PRAZO_RETIRADA", "2"), 10);
   const dataLimiteRetirada = addBusinessDays(new Date(), diasDePrazo);
 
   const atualizado = await prisma.$transaction(async (tx) => {
@@ -163,7 +163,8 @@ export async function entregar(emprestimoId: string) {
     throw new Error("Empréstimo não encontrado ou não está aguardando entrega");
   }
 
-  const dataDevolucaoPrevista = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+  const diasEmprestimo = parseInt(await getSetting("DIAS_PRAZO_EMPRESTIMO", "14"), 10);
+  const dataDevolucaoPrevista = addDays(new Date(), diasEmprestimo);
 
   const atualizado = await prisma.emprestimo.update({
     where: { id: emprestimoId },
@@ -252,9 +253,8 @@ export async function devolver(emprestimoId: string) {
     if (emp.dataDevolucaoPrevista && new Date() > emp.dataDevolucaoPrevista) {
       const diffDays = differenceInBusinessDays(new Date(), emp.dataDevolucaoPrevista);
 
-      // Padrão de 2 reais por dia (na Fase 3 a gente puxa da tabela Configuracao)
-      // TODO: IMPLEMENTAR CONFIGURAÇÃO
-      const valorMulta = 2;
+      // Padrão de 2 reais por dia
+      const valorMulta = parseFloat(await getSetting("VALOR_MULTA_DIARIA", "2.00"));
 
       await tx.multa.create({
         data: {
@@ -310,13 +310,19 @@ export async function renovar(usuarioId: string, emprestimoId: string) {
     );
   }
 
+  const diasEmprestimo = parseInt(await getSetting("DIAS_PRAZO_EMPRESTIMO", "14"));
+  const dataDevolucaoPrevista = addDays(new Date(), diasEmprestimo);
+
   // REALIZA A RENOVAÇÃO
   const atualizado = await prisma.emprestimo.update({
     where: { id: emprestimoId },
     data: {
-      dataDevolucaoPrevista: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+      dataDevolucaoPrevista: dataDevolucaoPrevista,
     },
   });
 
-  return { message: "Empréstimo renovado por mais 14 dias", emprestimo: atualizado };
+  return {
+    message: `Empréstimo renovado por mais ${diasEmprestimo} dias`,
+    emprestimo: atualizado,
+  };
 }
