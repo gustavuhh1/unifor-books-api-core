@@ -24,7 +24,7 @@
   "homepage": "https://github.com/gustavuhh1/unifor-books-api-core#readme",
   "dependencies": {
     "@prisma/adapter-pg": "^7.6.0",
-    "@prisma/client": "^7.6.0",
+    "@prisma/client": "^7.8.0",
     "bcrypt": "^6.0.0",
     "fastify": "^5.8.4",
     "jose": "^6.2.2",

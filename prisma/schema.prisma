@@ -1,6 +1,7 @@
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
+  url      = env("DATABASE_URL")
 }
 
 datasource db {
@@ -42,16 +43,17 @@ enum StatusMulta {
 // ─── Models ──────────────────────────────────────────
 
 model Usuario {
-  id        String @id @default(uuid())
-  matricula String @unique
-  nome      String
-  email     String @unique
-  senhaHash String
-  role      Role   @default(ALUNO)
-
+  id               String    @id @default(uuid())
+  matricula        String    @unique
+  nome             String
+  email            String    @unique
+  senhaHash        String
+  role             Role      @default(ALUNO)
+  excluido         Boolean   @default(false)
   banidoAte        DateTime?
   banidoPermanente Boolean   @default(false)
   criadoEm         DateTime  @default(now())
+  atualizadoEm     DateTime  @updatedAt
 
   emprestimos Emprestimo[]
   avaliacoes  Avaliacao[]
@@ -63,33 +65,47 @@ model Usuario {
   banimentos      Banimento[] @relation("UsuarioBanido")
   banimentosAdmin Banimento[] @relation("AdminBanidor")
   sessions        Session[]
+  auditLogs       AuditLog[]
 }
 
 model Livro {
-  id        String   @id @default(uuid())
-  titulo    String
-  autor     String
-  isbn      String   @unique
-  sinopse   String?
-  capaUrl   String?
-  categoria String
-  criadoEm  DateTime @default(now())
+  id            String   @id @default(uuid())
+  titulo        String
+  autor         String
+  isbn          String   @unique
+  sinopse       String?
+  capaUrl       String?
+  categoria     String
+  anoPublicacao Int?
+  editora       String?
+  idioma        String?
+  paginas       Int?
+  ativo         Boolean  @default(true)
+  criadoEm      DateTime @default(now())
+  atualizadoEm  DateTime @updatedAt
 
   exemplares  ExemplarLivro[]
   avaliacoes  Avaliacao[]
   comentarios Comentario[]
   filasEspera FilaEspera[]
+
+  @@index([titulo])
+  @@index([categoria])
 }
 
 model ExemplarLivro {
-  id          String         @id @default(uuid())
-  livroId     String
-  numeroTombo String         @unique
-  status      StatusExemplar @default(DISPONIVEL)
-  criadoEm    DateTime       @default(now())
+  id           String         @id @default(uuid())
+  livroId      String
+  numeroTombo  String         @unique
+  status       StatusExemplar @default(DISPONIVEL)
+  criadoEm     DateTime       @default(now())
+  atualizadoEm DateTime       @updatedAt
 
   livro       Livro        @relation(fields: [livroId], references: [id])
   emprestimos Emprestimo[]
+
+  @@index([livroId])
+  @@index([status])
 }
 
 model Emprestimo {
@@ -103,19 +119,24 @@ model Emprestimo {
   dataDevolucaoPrevista DateTime?
   dataDevolucaoReal     DateTime?
   criadoEm              DateTime         @default(now())
+  atualizadoEm          DateTime         @updatedAt
 
   usuario  Usuario       @relation(fields: [usuarioId], references: [id])
   exemplar ExemplarLivro @relation(fields: [exemplarId], references: [id])
   multa    Multa?
+
+  @@index([usuarioId])
+  @@index([status])
 }
 
 model FilaEspera {
-  id        String     @id @default(uuid())
-  usuarioId String
-  livroId   String
-  posicao   Int
-  status    StatusFila @default(AGUARDANDO)
-  criadoEm  DateTime   @default(now())
+  id           String     @id @default(uuid())
+  usuarioId    String
+  livroId      String
+  posicao      Int
+  status       StatusFila @default(AGUARDANDO)
+  criadoEm     DateTime   @default(now())
+  atualizadoEm DateTime   @updatedAt
 
   usuario Usuario @relation(fields: [usuarioId], references: [id])
   livro   Livro   @relation(fields: [livroId], references: [id])
@@ -132,17 +153,22 @@ model Multa {
   status        StatusMulta @default(PENDENTE)
   dataPagamento DateTime?
   criadoEm      DateTime    @default(now())
+  atualizadoEm  DateTime    @updatedAt
 
   emprestimo Emprestimo @relation(fields: [emprestimoId], references: [id])
   usuario    Usuario    @relation(fields: [usuarioId], references: [id])
+
+  @@index([usuarioId])
 }
 
 model Avaliacao {
-  id        String   @id @default(uuid())
-  usuarioId String
-  livroId   String
-  nota      Decimal  @db.Decimal(2, 1)
-  criadoEm  DateTime @default(now())
+  id           String   @id @default(uuid())
+  usuarioId    String
+  livroId      String
+  nota         Decimal  @db.Decimal(2, 1)
+  texto        String?
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
 
   usuario Usuario @relation(fields: [usuarioId], references: [id])
   livro   Livro   @relation(fields: [livroId], references: [id])
@@ -151,17 +177,18 @@ model Avaliacao {
 }
 
 model Comentario {
-  id        String   @id @default(uuid())
-  usuarioId String
-  livroId   String
-  parentId  String?
-  conteudo  String
-  deletado  Boolean  @default(false)
-  criadoEm  DateTime @default(now())
+  id           String   @id @default(uuid())
+  usuarioId    String
+  livroId      String
+  parentId     String?
+  conteudo     String
+  deletado     Boolean  @default(false)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
 
   usuario   Usuario          @relation(fields: [usuarioId], references: [id])
   livro     Livro            @relation(fields: [livroId], references: [id])
-  parent    Comentario?      @relation("Respostas", fields: [parentId], references: [id])
+  parent    Comentario?      @relation("Respostas", fields: [parentId], references: [id], onDelete: Cascade)
   respostas Comentario[]     @relation("Respostas")
   likes     ComentarioLike[]
 }
@@ -171,21 +198,23 @@ model ComentarioLike {
   usuarioId    String
   comentarioId String
   criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
 
   usuario    Usuario    @relation(fields: [usuarioId], references: [id])
-  comentario Comentario @relation(fields: [comentarioId], references: [id])
+  comentario Comentario @relation(fields: [comentarioId], references: [id], onDelete: Cascade)
 
   @@unique([usuarioId, comentarioId])
 }
 
 model Banimento {
-  id         String    @id @default(uuid())
-  usuarioId  String
-  adminId    String
-  motivo     String
-  banidoAte  DateTime?
-  permanente Boolean   @default(false)
-  criadoEm   DateTime  @default(now())
+  id           String    @id @default(uuid())
+  usuarioId    String
+  adminId      String
+  motivo       String
+  banidoAte    DateTime?
+  permanente   Boolean   @default(false)
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
 
   usuario Usuario @relation("UsuarioBanido", fields: [usuarioId], references: [id])
   admin   Usuario @relation("AdminBanidor", fields: [adminId], references: [id])
@@ -193,10 +222,32 @@ model Banimento {
 
 model Session {
   id           String   @id @default(uuid())
-  refreshToken String
+  refreshToken String   @unique
   userId       String
   expiresAt    DateTime
   criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
 
-  usuario Usuario @relation(fields: [userId], references: [id])
+  usuario Usuario @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Configuracao {
+  id           String   @id @default(uuid())
+  chave        String   @unique
+  valor        String
+  descricao    String?
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  adminId      String
+  acao         String
+  entidadeId   String?
+  detalhes     Json?
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  admin Usuario @relation(fields: [adminId], references: [id])
 }
