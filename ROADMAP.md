@@ -125,6 +125,8 @@ Este documento detalha o fluxo passo a passo para o desenvolvimento completo do 
 - **3. Moderação de Comentários (`DELETE /comments/:id`):** Admin pode deletar (soft delete) comentários impróprios que os alunos fizeram na Fase 5.
 - **4. Middlewares de Bloqueio Ativo:**
   - Atualizar os interceptadores (`authenticate.ts` / rotas) para checar a flag de banimento e bloquear ações de escrita (Empréstimos, Comentários, Avaliações) para usuários banidos.
+- **5. Registro de Auditoria (Audit Log):**
+  - Implementar lógica nos serviços para registrar na tabela `AuditLog` todas as ações críticas realizadas por Admins (como criar livros, banir alunos, perdoar multas e excluir comentários).
 
 ---
 
