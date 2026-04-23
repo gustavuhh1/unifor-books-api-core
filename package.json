@@ -8,7 +8,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "dev": "tsx watch src/server.ts",
-    "build": "tsc && cp -r src/prisma ./dist/prisma"
+    "build": "tsc && cp -r src/prisma ./dist/prisma",
+    "seed": "prisma migrate reset --force && tsx prisma/seed.ts"
   },
   "repository": {
     "type": "git",
