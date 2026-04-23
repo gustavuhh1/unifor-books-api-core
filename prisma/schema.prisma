@@ -23,6 +23,7 @@ enum StatusExemplar {
 
 enum StatusEmprestimo {
   PENDENTE
+  AGUARDANDO_ENTREGA
   ATIVO
   DEVOLVIDO
   NEGADO
@@ -116,6 +117,7 @@ model Emprestimo {
   motivoNegacao         String?
   dataSolicitacao       DateTime         @default(now())
   dataAprovacao         DateTime?
+  dataLimiteRetirada    DateTime?
   dataDevolucaoPrevista DateTime?
   dataDevolucaoReal     DateTime?
   criadoEm              DateTime         @default(now())

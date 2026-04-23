@@ -2,10 +2,11 @@ import "fastify";
 
 declare module "fastify" {
   interface FastifyRequest {
-    user?: {
+    user: {
       id: string;
       matricula: string;
       role: string;
+      sub: string;
     };
   }
 }
