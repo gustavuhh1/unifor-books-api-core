@@ -23,6 +23,8 @@
   },
   "homepage": "https://github.com/gustavuhh1/unifor-books-api-core#readme",
   "dependencies": {
+    "@fastify/swagger": "^9.7.0",
+    "@fastify/swagger-ui": "^5.2.6",
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "^7.8.0",
     "bcrypt": "^6.0.0",
