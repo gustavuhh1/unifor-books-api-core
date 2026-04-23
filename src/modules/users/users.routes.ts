@@ -13,6 +13,7 @@ export async function usersRoutes(app: FastifyInstance) {
         body: UsersSchema.criarUsuarioBodySchema,
         response: UsersSchema.criarUsuarioResponseSchema,
       },
+      preHandler: [authenticate, authorize("ADMIN")],
     },
     async (request, reply) => {
       const data = request.body as {
