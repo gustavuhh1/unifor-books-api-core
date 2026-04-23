@@ -6,17 +6,7 @@ import {
   editarLivro,
   adicionarExemplar,
 } from "./books.service";
-import {
-  listarLivrosQuerySchema,
-  listarLivrosResponseSchema,
-  buscarLivroPorIdResponseSchema,
-  criarLivroBodySchema,
-  criarLivroResponseSchema,
-  editarLivroBodySchema,
-  editarLivroResponseSchema,
-  adicionarExemplarBodySchema,
-  adicionarExemplarResponseSchema,
-} from "./books.schema";
+import * as BooksSchema from "./books.schema";
 import { authenticate } from "../../shared/middlewares/authenticate";
 import { authorize } from "../../shared/middlewares/authorize";
 
@@ -25,8 +15,9 @@ export async function booksRoutes(app: FastifyInstance) {
     "/books",
     {
       schema: {
-        querystring: listarLivrosQuerySchema,
-        response: listarLivrosResponseSchema,
+        tags: ["Books"],
+        querystring: BooksSchema.listarLivrosQuerySchema,
+        response: BooksSchema.listarLivrosResponseSchema,
       },
       preHandler: [authenticate],
     },
@@ -44,7 +35,7 @@ export async function booksRoutes(app: FastifyInstance) {
         const result = await listarLivros(query);
         return reply.code(200).send(result);
       } catch (error) {
-        return reply.code(200).send({ message: "Erro ao listar livros" });
+        return reply.code(500).send({ message: "Erro ao listar livros" });
       }
     },
   );
@@ -53,7 +44,8 @@ export async function booksRoutes(app: FastifyInstance) {
     "/books/:id",
     {
       schema: {
-        response: buscarLivroPorIdResponseSchema,
+        tags: ["Books"],
+        response: BooksSchema.buscarLivroPorIdResponseSchema,
       },
       preHandler: [authenticate],
     },
@@ -73,8 +65,9 @@ export async function booksRoutes(app: FastifyInstance) {
     "/books",
     {
       schema: {
-        body: criarLivroBodySchema,
-        response: criarLivroResponseSchema,
+        tags: ["Books"],
+        body: BooksSchema.criarLivroBodySchema,
+        response: BooksSchema.criarLivroResponseSchema,
       },
       preHandler: [authenticate, authorize("ADMIN")],
     },
@@ -101,8 +94,9 @@ export async function booksRoutes(app: FastifyInstance) {
     "/books/:id",
     {
       schema: {
-        body: editarLivroBodySchema,
-        response: editarLivroResponseSchema,
+        tags: ["Books"],
+        body: BooksSchema.editarLivroBodySchema,
+        response: BooksSchema.editarLivroResponseSchema,
       },
       preHandler: [authenticate, authorize("ADMIN")],
     },
@@ -129,8 +123,9 @@ export async function booksRoutes(app: FastifyInstance) {
     "/books/:id/exemplares",
     {
       schema: {
-        body: adicionarExemplarBodySchema,
-        response: adicionarExemplarResponseSchema,
+        tags: ["Books"],
+        body: BooksSchema.adicionarExemplarBodySchema,
+        response: BooksSchema.adicionarExemplarResponseSchema,
       },
       preHandler: [authenticate, authorize("ADMIN")],
     },

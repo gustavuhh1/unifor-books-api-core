@@ -1,8 +1,13 @@
-import { hashSenha } from "@lib/hash.js";
-import { prisma } from "../../database/prisma.js";
-import type { CriarUsuarioInput } from "./users.schema.js";
+import { hashSenha } from "../../lib/hash";
+import { prisma } from "../../database/prisma";
 
-export async function criarUsuario(data: CriarUsuarioInput) {
+export async function criarUsuario(data: {
+  matricula: string;
+  nome: string;
+  email: string;
+  senha: string;
+  role?: "ALUNO" | "ADMIN";
+}) {
   const usuarioExistente = await prisma.usuario.findFirst({
     where: {
       OR: [{ email: data.email }, { matricula: data.matricula }],
@@ -21,7 +26,7 @@ export async function criarUsuario(data: CriarUsuarioInput) {
       nome: data.nome,
       email: data.email,
       senhaHash,
-      role: data.role,
+      role: data.role || "ALUNO",
     },
     select: {
       id: true,
@@ -53,4 +58,20 @@ export async function listarUsuarios() {
   });
 
   return usuarios;
+}
+
+export async function buscarUsuarioPorId(id: string) {
+  const usuario = await prisma.usuario.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      matricula: true,
+      nome: true,
+      email: true,
+      role: true,
+      criadoEm: true,
+    },
+  });
+
+  return usuario;
 }

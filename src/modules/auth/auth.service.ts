@@ -7,7 +7,7 @@ export async function login(matricula: string, senha: string) {
     where: { matricula },
   });
 
-  if (!usuario) {
+  if (!usuario || usuario.excluido) {
     throw new Error("Credenciais inválidas");
   }
 

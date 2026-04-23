@@ -1,21 +1,15 @@
 import type { FastifyInstance } from "fastify";
 import { login, refresh, logout } from "./auth.service";
-import {
-  loginBodySchema,
-  loginResponseSchema,
-  logoutBodySchema,
-  logoutResponseSchema,
-  refreshBodySchema,
-  refreshResponseSchema,
-} from "./auth.scheme";
+import * as authSchema from "./auth.scheme";
 
 export async function authRoutes(app: FastifyInstance) {
   app.post(
     "/auth/login",
     {
       schema: {
-        body: loginBodySchema,
-        response: loginResponseSchema,
+        tags: ["Auth"],
+        body: authSchema.loginBodySchema,
+        response: authSchema.loginResponseSchema,
       },
     },
     async (request, reply) => {
@@ -37,8 +31,9 @@ export async function authRoutes(app: FastifyInstance) {
     "/auth/refresh",
     {
       schema: {
-        body: refreshBodySchema,
-        response: refreshResponseSchema,
+        tags: ["Auth"],
+        body: authSchema.refreshBodySchema,
+        response: authSchema.refreshResponseSchema,
       },
     },
     async (request, reply) => {
@@ -59,8 +54,9 @@ export async function authRoutes(app: FastifyInstance) {
     "/auth/logout",
     {
       schema: {
-        body: logoutBodySchema,
-        response: logoutResponseSchema,
+        tags: ["Auth"],
+        body: authSchema.logoutBodySchema,
+        response: authSchema.logoutResponseSchema,
       },
     },
     async (request, reply) => {

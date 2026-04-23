@@ -78,6 +78,12 @@ export const listarLivrosResponseSchema = {
       limit: { type: "number" },
     },
   },
+  500: {
+    type: "object",
+    properties: {
+      message: { type: "string" },
+    },
+  },
 } as const;
 
 export const buscarLivroPorIdResponseSchema = {
