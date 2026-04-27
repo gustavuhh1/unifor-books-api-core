@@ -4,6 +4,8 @@ import { authRoutes } from "./modules/auth/auth.routes";
 import { booksRoutes } from "./modules/books/books.routes";
 import { loansRoutes } from "./modules/emprestimos/loans.routes";
 import { finesRoutes } from "./modules/multas/fines.routes";
+import { comentariosRoutes } from "./modules/comentarios/comentarios.routes";
+import { avaliacoesRoutes } from "./modules/avaliacoes/avaliacoes.routes";
 
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
@@ -45,5 +47,7 @@ app.register(authRoutes);
 app.register(booksRoutes);
 app.register(loansRoutes);
 app.register(finesRoutes);
+app.register(comentariosRoutes);
+app.register(avaliacoesRoutes);
 
 export default app;

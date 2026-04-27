@@ -2,7 +2,18 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 import { authenticate } from "../../shared/middlewares/authenticate";
 import { authorize } from "../../shared/middlewares/authorize";
 import * as LoansSchema from "./loans.schema";
-import { solicitar, aprovar, negar, devolver, renovar, meusEmprestimos, entregar, cancelar } from "./loans.service";
+import {
+  solicitar,
+  aprovar,
+  negar,
+  devolver,
+  renovar,
+  meusEmprestimos,
+  entregar,
+  cancelar,
+  listarEmprestimos,
+  criarEmprestimoPorMatricula,
+} from "./loans.service";
 
 export async function loansRoutes(app: FastifyInstance) {
   // Solicitar empréstimo (Aluno)
@@ -26,11 +37,51 @@ export async function loansRoutes(app: FastifyInstance) {
 
         if (result.status === "FILA") {
           return reply.code(202).send({ message: result.message, fila: result.fila });
-        } 
+        }
 
-        return reply.code(201).send({ message: result.message, emprestimo: result.emprestimo });
+        return reply
+          .code(201)
+          .send({ message: result.message, emprestimo: result.emprestimo });
       } catch (error: any) {
-        return reply.code(409).send({ message: error.message || "Erro ao solicitar empréstimo" });
+        return reply
+          .code(409)
+          .send({ message: error.message || "Erro ao solicitar empréstimo" });
+      }
+    },
+  );
+
+  // Criar empréstimo (Admin)
+  app.post(
+    "/emprestimos",
+    {
+      schema: {
+        tags: ["Empréstimos"],
+        security: [{ bearerAuth: [] }],
+        body: LoansSchema.solicitarEmprestimoBodySchema,
+        response: LoansSchema.solicitarEmprestimoResponseSchema,
+      },
+      preHandler: [authenticate, authorize("ADMIN")],
+    },
+    async (request, reply) => {
+      try {
+        const { livroId, matricula } = request.body as {
+          livroId: string;
+          matricula: string;
+        };
+
+        const result = await criarEmprestimoPorMatricula(matricula, livroId);
+
+        if (result.status === "FILA") {
+          return reply.code(202).send({ message: result.message, fila: result.fila });
+        }
+
+        return reply
+          .code(201)
+          .send({ message: result.message, emprestimo: result.emprestimo });
+      } catch (error: any) {
+        return reply
+          .code(409)
+          .send({ message: error.message || "Erro ao solicitar empréstimo" });
       }
     },
   );
@@ -53,7 +104,29 @@ export async function loansRoutes(app: FastifyInstance) {
         const result = await renovar(usuarioId, id);
         return reply.code(200).send(result);
       } catch (error: any) {
-        return reply.code(400).send({ message: error.message || "Erro ao renovar empréstimo" });
+        return reply
+          .code(400)
+          .send({ message: error.message || "Erro ao renovar empréstimo" });
+      }
+    },
+  );
+
+  // Ver empréstimos (Admin)
+  app.get(
+    "/emprestimos",
+    {
+      schema: {
+        tags: ["Empréstimos"],
+        security: [{ bearerAuth: [] }],
+      },
+      preHandler: [authenticate, authorize("ADMIN")],
+    },
+    async (request, reply) => {
+      try {
+        const result = await listarEmprestimos();
+        return reply.code(200).send(result);
+      } catch (error: any) {
+        return reply.code(400).send({ message: "Erro ao buscar empréstimos" });
       }
     },
   );
@@ -97,7 +170,9 @@ export async function loansRoutes(app: FastifyInstance) {
         const result = await aprovar(id);
         return reply.code(200).send(result);
       } catch (error: any) {
-        return reply.code(400).send({ message: error.message || "Erro ao aprovar empréstimo" });
+        return reply
+          .code(400)
+          .send({ message: error.message || "Erro ao aprovar empréstimo" });
       }
     },
   );
@@ -121,7 +196,9 @@ export async function loansRoutes(app: FastifyInstance) {
         const result = await negar(id, motivoNegacao);
         return reply.code(200).send(result);
       } catch (error: any) {
-        return reply.code(400).send({ message: error.message || "Erro ao negar empréstimo" });
+        return reply
+          .code(400)
+          .send({ message: error.message || "Erro ao negar empréstimo" });
       }
     },
   );
@@ -143,7 +220,9 @@ export async function loansRoutes(app: FastifyInstance) {
         const result = await devolver(id);
         return reply.code(200).send(result);
       } catch (error: any) {
-        return reply.code(400).send({ message: error.message || "Erro ao devolver empréstimo" });
+        return reply
+          .code(400)
+          .send({ message: error.message || "Erro ao devolver empréstimo" });
       }
     },
   );
@@ -165,7 +244,9 @@ export async function loansRoutes(app: FastifyInstance) {
         const result = await entregar(id);
         return reply.code(200).send(result);
       } catch (error: any) {
-        return reply.code(400).send({ message: error.message || "Erro ao registrar entrega do livro" });
+        return reply
+          .code(400)
+          .send({ message: error.message || "Erro ao registrar entrega do livro" });
       }
     },
   );
@@ -187,7 +268,9 @@ export async function loansRoutes(app: FastifyInstance) {
         const result = await cancelar(id);
         return reply.code(200).send(result);
       } catch (error: any) {
-        return reply.code(400).send({ message: error.message || "Erro ao cancelar reserva" });
+        return reply
+          .code(400)
+          .send({ message: error.message || "Erro ao cancelar reserva" });
       }
     },
   );

@@ -158,7 +158,9 @@ export const adicionarExemplarResponseSchema = {
 export const deletarExemplarResponseSchema = {
   200: {
     type: "object",
-    properties: exemplarSchema.properties,
+    properties: {
+      message: { type: "string" },
+    },
   },
   404: {
     type: "object",

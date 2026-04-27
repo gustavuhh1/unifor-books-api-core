@@ -1,6 +1,7 @@
 import { addBusinessDays, addDays, differenceInBusinessDays } from "date-fns";
 import { prisma } from "../../database/prisma";
 import { getSetting } from "../../shared/config/settings";
+import { Prisma } from "@/generated/prisma/client";
 
 export async function solicitar(usuarioId: string, livroId: string) {
   // 1. Checar multas
@@ -102,6 +103,60 @@ export async function solicitar(usuarioId: string, livroId: string) {
   }
 }
 
+export async function criarEmprestimoPorMatricula(matricula: string, livroId: string) {
+  const usuario = await prisma.usuario.findUnique({
+    where: { matricula },
+    select: { id: true },
+  });
+
+  if (!usuario) {
+    throw new Error("Usuário não encontrado");
+  }
+
+  const usuarioId = usuario.id;
+
+  const result = await solicitar(usuarioId, livroId);
+
+  return result;
+}
+
+export async function listarEmprestimos(withDevolvidos: boolean = false) {
+  const where: Prisma.EmprestimoWhereInput = {};
+
+  if (!withDevolvidos) {
+    where.status = { in: ["PENDENTE", "AGUARDANDO_ENTREGA", "ATIVO"] };
+  } else {
+    where.status = { in: ["PENDENTE", "AGUARDANDO_ENTREGA", "ATIVO", "DEVOLVIDO"] };
+  }
+
+  const emprestimos = await prisma.emprestimo.findMany({
+    where,
+    orderBy: { criadoEm: "desc" },
+    include: {
+      usuario: {
+        select: {
+          id: true,
+          nome: true,
+          matricula: true,
+          email: true,
+        },
+      },
+      exemplar: {
+        include: {
+          livro: {
+            select: {
+              id: true,
+              titulo: true,
+              isbn: true,
+            },
+          },
+        },
+      },
+    },
+  });
+  return emprestimos;
+}
+
 export async function meusEmprestimos(usuarioId: string) {
   const emprestimos = await prisma.emprestimo.findMany({
     where: { usuarioId },
@@ -192,7 +247,10 @@ export async function cancelar(emprestimoId: string) {
   const atualizado = await prisma.$transaction(async (tx) => {
     const emp = await tx.emprestimo.update({
       where: { id: emprestimoId },
-      data: { status: "CANCELADO" },
+      data: {
+        status: "CANCELADO",
+        motivoNegacao: "Prazo de entrega expirado.",
+      },
     });
 
     await tx.exemplarLivro.update({

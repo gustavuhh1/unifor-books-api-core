@@ -8,12 +8,14 @@ import {
   atualizarStatusExemplar,
   desativarLivro,
   deletarExemplar,
+  atualizarExemplar,
 } from "./books.service";
 import * as BooksSchema from "./books.schema";
 import { authenticate } from "../../shared/middlewares/authenticate";
 import { authorize } from "../../shared/middlewares/authorize";
 
 export async function booksRoutes(app: FastifyInstance) {
+  // Listar livros com busca, paginação e ordenação
   app.get(
     "/books",
     {
@@ -43,6 +45,7 @@ export async function booksRoutes(app: FastifyInstance) {
     },
   );
 
+  // Buscar livro por ID
   app.get(
     "/books/:id",
     {
@@ -64,6 +67,7 @@ export async function booksRoutes(app: FastifyInstance) {
     },
   );
 
+  // Criar livro
   app.post(
     "/books",
     {
@@ -97,6 +101,7 @@ export async function booksRoutes(app: FastifyInstance) {
     },
   );
 
+  // Editar livro
   app.put(
     "/books/:id",
     {
@@ -131,6 +136,7 @@ export async function booksRoutes(app: FastifyInstance) {
     },
   );
 
+  // Adicionar exemplar
   app.post(
     "/books/:id/exemplares",
     {
@@ -154,6 +160,7 @@ export async function booksRoutes(app: FastifyInstance) {
     },
   );
 
+  // Atualizar status de um exemplar
   app.patch(
     "/books/exemplares/:exemplarId/status",
     {
@@ -177,6 +184,25 @@ export async function booksRoutes(app: FastifyInstance) {
     },
   );
 
+  // Atualizar número de tombo de um exemplar
+  app.patch("/books/exemplares/:exemplarId", {
+    schema: {
+      tags: ["Books"],
+    },
+    preHandler: [authenticate, authorize("ADMIN")],
+  }, async (request, reply) => {
+    const { exemplarId } = request.params as { exemplarId: string };
+    const { numeroTombo } = request.body as { numeroTombo: string };
+
+    try {
+      const result = await atualizarExemplar(exemplarId, numeroTombo);
+      return reply.code(200).send(result);
+    } catch (error) {
+      return reply.code(404).send({ message: "Exemplar não encontrado" });
+    }
+  });
+
+  // Desativar livro
   app.delete(
     "/books/:id",
     {
@@ -198,6 +224,7 @@ export async function booksRoutes(app: FastifyInstance) {
     },
   );
 
+  // Deletar exemplar
   app.delete(
     "/books/:id/exemplares/:exemplarId",
     {

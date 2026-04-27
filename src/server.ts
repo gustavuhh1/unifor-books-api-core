@@ -1,12 +1,14 @@
 import "dotenv/config";
 import app from "./app";
 import { connectRabbitMQ, closeRabbitMQ } from "./shared/rabbitmq/connection.js";
+import { startComentariosWorker } from "./modules/comentarios/comentarios.worker.js";
 
 const PORT = Number(process.env.PORT) || 3333;
 
 async function start() {
   try {
     await connectRabbitMQ();
+    await startComentariosWorker();
 
     await app.listen({ port: PORT, host: "0.0.0.0" });
     console.log(`🚀 Servidor rodando na porta ${PORT}`);

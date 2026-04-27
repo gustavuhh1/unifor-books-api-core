@@ -329,6 +329,32 @@ export async function atualizarStatusExemplar(
 }
 
 // ─────────────────────────────────────────
+// ATUALIZAR EXEMPLAR
+// ─────────────────────────────────────────
+export async function atualizarExemplar(
+  exemplarId: string,
+  numeroTombo: string,
+) {
+  const exemplarExistente = await prisma.exemplarLivro.findUnique({
+    where: { id: exemplarId },
+  });
+
+  if (!exemplarExistente) {
+    throw new Error("Exemplar não encontrado");
+  }
+
+  return await prisma.exemplarLivro.update({
+    where: { id: exemplarId },
+    data: { numeroTombo },
+    select: {
+      id: true,
+      numeroTombo: true,
+      status: true,
+    },
+  });
+}
+
+// ─────────────────────────────────────────
 // DELETAR EXEMPLAR
 // ─────────────────────────────────────────
 export async function deletarExemplar(exemplarId: string) {
@@ -351,12 +377,9 @@ export async function deletarExemplar(exemplarId: string) {
     throw new Error("Exemplar possui empréstimo ativo e não pode ser removido");
   }
 
-  return await prisma.exemplarLivro.delete({
+  await prisma.exemplarLivro.delete({
     where: { id: exemplarId },
-    select: {
-      id: true,
-      numeroTombo: true,
-      status: true,
-    },
   });
+
+  return { message: "Exemplar removido com sucesso" };
 }
