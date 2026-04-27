@@ -13,9 +13,11 @@ describe("Historia: Login/Token de usuarios", () => {
       email: "joao.silva3@unifor.br",
       senhaHash: "hash",
       role: "ALUNO",
+      excluido: false,
       banidoAte: null,
       banidoPermanente: false,
       criadoEm: new Date(),
+      atualizadoEm: new Date(),
     });
 
     const user = await criarUsuario({

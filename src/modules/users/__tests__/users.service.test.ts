@@ -11,9 +11,11 @@ describe("Historia: Cadastro de usuário", () => {
       email: "joao.silva@unifor.br",
       senhaHash: "hash",
       role: "ALUNO",
+      excluido: false,
       banidoAte: null,
       banidoPermanente: false,
       criadoEm: new Date(),
+      atualizadoEm: new Date(),
     });
 
     const result = await criarUsuario({
@@ -54,9 +56,11 @@ describe("Historia: Cadastro de usuário", () => {
       email: "joao.silva@unifor.br",
       senhaHash: "hash",
       role: "ALUNO",
+      excluido: false,
       banidoAte: null,
       banidoPermanente: false,
       criadoEm: new Date(),
+      atualizadoEm: new Date(),
     });
 
     const result = await criarUsuario({
@@ -80,9 +84,11 @@ describe("Historia: Cadastro de usuário", () => {
         email: "joao.silva@unifor.br",
         senhaHash: "hash",
         role: "ALUNO",
+        excluido: false,
         banidoAte: null,
         banidoPermanente: false,
         criadoEm: new Date(),
+        atualizadoEm: new Date(),
       },
     ]);
 
