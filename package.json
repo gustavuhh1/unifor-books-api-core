@@ -8,8 +8,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "dev": "tsx watch src/server.ts",
-    "build": "tsc && cp -r src/prisma ./dist/prisma",
-    "seed": "prisma migrate reset --force && tsx prisma/seed.ts"
+    "build": "prisma generate && tsup src/server.ts --out-dir dist --format esm --clean",
+    "seed": "prisma migrate reset --force && tsx prisma/seed.ts",
+    "start": "node dist/server.js"
   },
   "repository": {
     "type": "git",
@@ -31,6 +32,7 @@
     "amqplib": "^1.0.3",
     "bcrypt": "^6.0.0",
     "date-fns": "^4.1.0",
+    "dotenv": "^17.4.2",
     "fastify": "^5.8.4",
     "jose": "^6.2.2",
     "pg": "^8.20.0",
@@ -42,9 +44,9 @@
     "@types/node": "^25.5.2",
     "@types/pg": "^8.20.0",
     "@types/supertest": "^7.2.0",
-    "dotenv": "^17.4.0",
     "prisma": "^7.6.0",
     "supertest": "^7.2.2",
+    "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",
     "vitest": "^4.1.4",
