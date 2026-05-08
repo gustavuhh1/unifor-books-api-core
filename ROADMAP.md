@@ -93,13 +93,17 @@ Este documento detalha o fluxo passo a passo para o desenvolvimento completo do 
 
 ---
 
-## 🟤 FASE 6: Os Consumidores (Workers)
+## 🟤 FASE 6: Os Consumidores (Workers) e Segurança Anti-Spam
 
-*Objetivo: Processar os eventos disparados pela Fase 5.*
+*Objetivo: Processar os eventos disparados pela Fase 5 e blindar o sistema contra envios em massa (Defense in Depth).*
 
-- **1. Worker de Comentários:** Um processo em background que escuta a `fila.comentarios` e faz o `prisma.comentario.create()`.
-- **2. Worker de Likes:** Escuta a `fila.likes` e persiste no banco.
-- **3. Notificador da Fila de Espera (Bônus):** Ao devolver um livro (Fase 2), disparar evento no RabbitMQ para que um Worker avise o próximo aluno da `FilaEspera` que o livro está disponível.
+- **1. Worker de Comentários:** Um processo em background que escuta a `fila.comentarios` e persiste no banco de dados (`prisma.comentario.create()`).
+- **2. Mecanismos Anti-Spam (Comentários):** Implementar as 3 camadas de defesa discutidas:
+  - **Rate Limit (Fastify):** Bloqueio na porta de entrada da API, limitando requisições (ex: max 5 requests/min na rota de comentários).
+  - **Cooldown (Worker/API):** Impedir envios em rajada impondo um tempo de espera (ex: 15s) entre um comentário e outro do mesmo aluno no mesmo livro.
+  - **Anti-Duplicação (Worker):** Interceptar mensagens no Worker e verificar se o texto é idêntico ao do comentário anterior daquele usuário. Caso positivo, descartar silenciosamente.
+- **3. Worker de Likes:** Escuta a `fila.likes` e persiste a curtida no banco.
+- **4. Notificador da Fila de Espera (Bônus):** Ao devolver um livro (Fase 2), disparar evento no RabbitMQ para que um Worker avise o próximo aluno da `FilaEspera` que o livro está disponível.
 
 ---
 
