@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { login, refresh, logout } from "./auth.service";
 import * as authSchema from "./auth.scheme";
+import { authenticate } from "@/shared/middlewares/authenticate";
 
 export async function authRoutes(app: FastifyInstance) {
   app.post(
@@ -55,9 +56,11 @@ export async function authRoutes(app: FastifyInstance) {
     {
       schema: {
         tags: ["Auth"],
+        security: [{ bearerAuth: [] }],
         body: authSchema.logoutBodySchema,
         response: authSchema.logoutResponseSchema,
       },
+      preHandler: [authenticate]
     },
     async (request, reply) => {
       const { refreshToken } = request.body as {

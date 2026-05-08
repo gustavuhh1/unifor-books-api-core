@@ -23,6 +23,7 @@ export async function booksRoutes(app: FastifyInstance) {
         tags: ["Books"],
         querystring: BooksSchema.listarLivrosQuerySchema,
         response: BooksSchema.listarLivrosResponseSchema,
+        security: [{ bearerAuth: [] }],
       },
       preHandler: [authenticate],
     },
@@ -52,6 +53,7 @@ export async function booksRoutes(app: FastifyInstance) {
       schema: {
         tags: ["Books"],
         response: BooksSchema.buscarLivroPorIdResponseSchema,
+        security: [{ bearerAuth: [] }],
       },
       preHandler: [authenticate],
     },
@@ -75,6 +77,7 @@ export async function booksRoutes(app: FastifyInstance) {
         tags: ["Books"],
         body: BooksSchema.criarLivroBodySchema,
         response: BooksSchema.criarLivroResponseSchema,
+        security: [{ bearerAuth: [] }],
       },
       preHandler: [authenticate, authorize("ADMIN")],
     },
@@ -109,6 +112,7 @@ export async function booksRoutes(app: FastifyInstance) {
         tags: ["Books"],
         body: BooksSchema.editarLivroBodySchema,
         response: BooksSchema.editarLivroResponseSchema,
+        security: [{ bearerAuth: [] }],
       },
       preHandler: [authenticate, authorize("ADMIN")],
     },
@@ -144,6 +148,7 @@ export async function booksRoutes(app: FastifyInstance) {
         tags: ["Books"],
         body: BooksSchema.adicionarExemplarBodySchema,
         response: BooksSchema.adicionarExemplarResponseSchema,
+        security: [{ bearerAuth: [] }],
       },
       preHandler: [authenticate, authorize("ADMIN")],
     },
@@ -168,12 +173,15 @@ export async function booksRoutes(app: FastifyInstance) {
         tags: ["Books"],
         body: BooksSchema.atualizarExemplarBodySchema,
         response: BooksSchema.atualizarExemplarResponseSchema,
+        security: [{ bearerAuth: [] }],
       },
       preHandler: [authenticate, authorize("ADMIN")],
     },
     async (request, reply) => {
       const { exemplarId } = request.params as { exemplarId: string };
-      const { status } = request.body as { status: "DISPONIVEL" | "EMPRESTADO" | "INDISPONIVEL" };
+      const { status } = request.body as {
+        status: "DISPONIVEL" | "EMPRESTADO" | "INDISPONIVEL";
+      };
 
       try {
         const result = await atualizarStatusExemplar(exemplarId, status);
@@ -185,22 +193,27 @@ export async function booksRoutes(app: FastifyInstance) {
   );
 
   // Atualizar número de tombo de um exemplar
-  app.patch("/books/exemplares/:exemplarId", {
-    schema: {
-      tags: ["Books"],
+  app.patch(
+    "/books/exemplares/:exemplarId",
+    {
+      schema: {
+        tags: ["Books"],
+        security: [{ bearerAuth: [] }],
+      },
+      preHandler: [authenticate, authorize("ADMIN")],
     },
-    preHandler: [authenticate, authorize("ADMIN")],
-  }, async (request, reply) => {
-    const { exemplarId } = request.params as { exemplarId: string };
-    const { numeroTombo } = request.body as { numeroTombo: string };
+    async (request, reply) => {
+      const { exemplarId } = request.params as { exemplarId: string };
+      const { numeroTombo } = request.body as { numeroTombo: string };
 
-    try {
-      const result = await atualizarExemplar(exemplarId, numeroTombo);
-      return reply.code(200).send(result);
-    } catch (error) {
-      return reply.code(404).send({ message: "Exemplar não encontrado" });
-    }
-  });
+      try {
+        const result = await atualizarExemplar(exemplarId, numeroTombo);
+        return reply.code(200).send(result);
+      } catch (error) {
+        return reply.code(404).send({ message: "Exemplar não encontrado" });
+      }
+    },
+  );
 
   // Desativar livro
   app.delete(
@@ -209,6 +222,7 @@ export async function booksRoutes(app: FastifyInstance) {
       schema: {
         tags: ["Books"],
         response: BooksSchema.editarLivroResponseSchema, // Reaproveita o schema do livro
+        security: [{ bearerAuth: [] }],
       },
       preHandler: [authenticate, authorize("ADMIN")],
     },
@@ -231,6 +245,7 @@ export async function booksRoutes(app: FastifyInstance) {
       schema: {
         tags: ["Books"],
         response: BooksSchema.deletarExemplarResponseSchema,
+        security: [{ bearerAuth: [] }],
       },
       preHandler: [authenticate, authorize("ADMIN")],
     },
@@ -241,7 +256,8 @@ export async function booksRoutes(app: FastifyInstance) {
         const result = await deletarExemplar(exemplarId);
         return reply.code(200).send(result);
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Erro ao deletar exemplar";
+        const message =
+          error instanceof Error ? error.message : "Erro ao deletar exemplar";
         if (message.includes("não encontrado")) {
           return reply.code(404).send({ message });
         }

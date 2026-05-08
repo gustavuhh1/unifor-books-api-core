@@ -10,6 +10,7 @@ export async function usersRoutes(app: FastifyInstance) {
     {
       schema: {
         tags: ["Users"],
+        security: [{ bearerAuth: [] }],
         body: UsersSchema.criarUsuarioBodySchema,
         response: UsersSchema.criarUsuarioResponseSchema,
       },
@@ -28,7 +29,9 @@ export async function usersRoutes(app: FastifyInstance) {
         const usuario = await criarUsuario(data);
         return reply.code(201).send(usuario);
       } catch (error) {
-        return reply.code(409).send({ message: "Já existe um usuário com esse email ou matrícula" });
+        return reply
+          .code(409)
+          .send({ message: "Já existe um usuário com esse email ou matrícula" });
       }
     },
   );
