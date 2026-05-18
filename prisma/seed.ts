@@ -48,7 +48,7 @@ async function main() {
   console.log("👤 Criando usuários...");
   const admin = await prisma.usuario.create({
     data: {
-      matricula: "admin",
+      matricula: "1234560",
       nome: "Administrador Mestre",
       email: "admin@unifor.br",
       senhaHash: senhaPadrao,
@@ -58,9 +58,19 @@ async function main() {
 
   const aluno = await prisma.usuario.create({
     data: {
-      matricula: "1234567",
+      matricula: "1234561",
       nome: "João Aluno",
       email: "joao@unifor.br",
+      senhaHash: senhaPadrao,
+      role: "ALUNO",
+    },
+  });
+
+  const alunoComentador = await prisma.usuario.create({
+    data: {
+      matricula: "1234562",
+      nome: "Aluno Comentador",
+      email: "alunocomentador@unifor.br",
       senhaHash: senhaPadrao,
       role: "ALUNO",
     },
@@ -114,6 +124,35 @@ async function main() {
 
       { livroId: livro3.id, numeroTombo: "TOMBO-006", status: "DISPONIVEL" },
     ],
+  });
+
+  // 5. criar Comentários
+  console.log("💬 Criando comentários...");
+  const comentario1 = await prisma.comentario.create({
+    data: {
+      usuarioId: alunoComentador.id,
+      livroId: livro1.id,
+      conteudo:
+        "Esse livro é muito bom, recomendo a leitura para todos os alunos da área de computação.",
+    },
+  });
+
+  //6. curtir Comentarios
+  await prisma.comentarioLike.create({
+    data: {
+      comentarioId: comentario1.id,
+      usuarioId: aluno.id,
+    },
+  });
+
+  // 7. criar respos
+  await prisma.comentario.create({
+    data: {
+      usuarioId: aluno.id,
+      livroId: livro1.id,
+      parentId: comentario1.id,
+      conteudo: "Concordo!",
+    },
   });
 
   console.log("✅ Seed finalizado com sucesso!");

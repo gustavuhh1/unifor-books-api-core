@@ -44,7 +44,7 @@ export async function startComentariosWorker() {
         const payload = JSON.parse(msg.content.toString());
         const { usuarioId, comentarioId } = payload;
 
-        // Check if already liked to prevent unique constraint error
+        // Verifica se já curtiu
         const existing = await prisma.comentarioLike.findUnique({
           where: {
             usuarioId_comentarioId: {
@@ -55,7 +55,7 @@ export async function startComentariosWorker() {
         });
 
         if (existing) {
-          // If already liked, unlike it
+          // Se já curtiu, descurte
           await prisma.comentarioLike.delete({
             where: {
               id: existing.id,

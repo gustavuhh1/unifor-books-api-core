@@ -42,3 +42,61 @@ export const likeComentarioResponseSchema = {
     properties: { message: { type: "string" } },
   },
 } as const;
+
+// ─── GET /books/:id/comments ─────────────────────────────────────────────────
+
+export const listarComentariosResponseSchema = {
+  200: {
+    type: "array",
+    items: {
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        usuarioId: { type: "string" },
+        livroId: { type: "string" },
+        parentId: { type: "string" },
+        conteudo: { type: "string" },
+        deletado: { type: "boolean" },
+        criadoEm: { type: "string", format: "date-time" },
+        atualizadoEm: { type: "string", format: "date-time" },
+        usuario: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            nome: { type: "string" },
+            email: { type: "string" },
+          },
+        },
+        parent: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            usuarioId: { type: "string" },
+            livroId: { type: "string" },
+            conteudo: { type: "string" },
+            criadoEm: { type: "string", format: "date-time" },
+          },
+        },
+        respostas: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              usuarioId: { type: "string" },
+              livroId: { type: "string" },
+              parentId: { type: "string" },
+              conteudo: { type: "string" },
+              criadoEm: { type: "string", format: "date-time" },
+            },
+          },
+        },
+        likesCount: { type: "number" },
+      },
+    },
+  },
+  404: {
+    type: "object",
+    properties: { message: { type: "string" } },
+  },
+} as const;

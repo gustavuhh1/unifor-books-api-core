@@ -1,5 +1,9 @@
 import type { FastifyInstance } from "fastify";
-import { publicarComentario, publicarLike } from "./comentarios.service.js";
+import {
+  listarComentarios,
+  publicarComentario,
+  publicarLike,
+} from "./comentarios.service.js";
 import * as ComentariosSchema from "./comentarios.schema.js";
 import { authenticate } from "../../shared/middlewares/authenticate.js";
 
@@ -12,6 +16,7 @@ export async function comentariosRoutes(app: FastifyInstance) {
         tags: ["Engajamento"],
         body: ComentariosSchema.criarComentarioBodySchema,
         response: ComentariosSchema.criarComentarioResponseSchema,
+        security: [{ bearerAuth: [] }],
       },
       preHandler: [authenticate],
     },
@@ -31,8 +36,7 @@ export async function comentariosRoutes(app: FastifyInstance) {
           ...(parentId !== undefined ? { parentId } : {}),
         });
         return reply.code(202).send({
-          message:
-            "Comentário recebido e enviado para processamento assíncrono.",
+          message: "Comentário recebido e enviado para processamento assíncrono.",
           queued: true,
         });
       } catch (error) {
@@ -54,6 +58,7 @@ export async function comentariosRoutes(app: FastifyInstance) {
       schema: {
         tags: ["Engajamento"],
         response: ComentariosSchema.likeComentarioResponseSchema,
+        security: [{ bearerAuth: [] }],
       },
       preHandler: [authenticate],
     },
@@ -68,13 +73,37 @@ export async function comentariosRoutes(app: FastifyInstance) {
           queued: true,
         });
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Erro ao registrar like";
+        const message = error instanceof Error ? error.message : "Erro ao registrar like";
 
         if (message.includes("não encontrado")) {
           return reply.code(404).send({ message });
         }
         // Fallback genérico — retorna 404 pois o único erro esperado é "não encontrado"
+        return reply.code(404).send({ message });
+      }
+    },
+  );
+  // ─── GET /books/:id/comments ──────────────────────────────────────────────
+  app.get(
+    "/books/:id/comments",
+    {
+      schema: {
+        tags: ["Engajamento"],
+        response: ComentariosSchema.listarComentariosResponseSchema,
+        security: [{ bearerAuth: [] }],
+      },
+      preHandler: [authenticate],
+    },
+    async (request, reply) => {
+      const { id: livroId } = request.params as { id: string };
+
+      try {
+        const comentarios = await listarComentarios(livroId);
+        return reply.code(200).send(comentarios);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Erro ao listar comentários";
+
         return reply.code(404).send({ message });
       }
     },

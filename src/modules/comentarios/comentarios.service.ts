@@ -56,3 +56,16 @@ export async function publicarLike(payload: {
 
   channel.sendToQueue(QUEUES.LIKES, mensagem, { persistent: true });
 }
+
+export async function listarComentarios(livroId: string) {
+  const comentarios = await prisma.comentario.findMany({
+    where: { livroId },
+    include: {
+      usuario: true,
+      parent: true,
+      respostas: true,
+    },
+  });
+
+  return comentarios;
+}
